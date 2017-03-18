@@ -1,14 +1,22 @@
 package ru.ncedu.java.SolomatinAA.WordCounter;
 
 import java.io.PrintStream;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by Artem Solomatin on 16.03.17.
  * NetCracker
  */
 public class ImplWordCounter implements WordCounter {
+    private String text;
+    private HashMap<String, Long> entry;
+
+    ImplWordCounter(){
+        entry = new HashMap<>();
+    }
     /**
      * Принимает текст для анализа
      *
@@ -16,6 +24,7 @@ public class ImplWordCounter implements WordCounter {
      */
     @Override
     public void setText(String text) {
+        this.text = text;
 
     }
 
@@ -27,7 +36,7 @@ public class ImplWordCounter implements WordCounter {
      */
     @Override
     public String getText() {
-        return null;
+        return text;
     }
 
     /**
@@ -42,7 +51,40 @@ public class ImplWordCounter implements WordCounter {
      */
     @Override
     public Map<String, Long> getWordCounts() {
-        return null;
+        if (this.getText() == null || this.getText().equals("")) {
+            throw new IllegalStateException();
+        }
+
+        String text = this.text.toLowerCase();
+
+        String[] tokens = text.split(" +");
+        HashSet<String> words = new HashSet<>();
+
+
+
+        for (String token : tokens) {
+            System.out.print(token + " ");
+            if (!token.equals(" ")) {
+                words.add(token);
+            }
+        }
+
+        Collections.addAll(words, tokens);
+        //now we have a set of unique words
+
+        for (String tmp : words) {
+            long count = 0L;
+            if (!tmp.equals("")) {
+                Pattern pattern = Pattern.compile("(^| )+" + tmp + "($| )+");
+                System.out.println(pattern + " '" + tmp + "'");    //pre-test
+                Matcher matcher = pattern.matcher(text);
+                while (matcher.find()) {
+                    count++;
+                }
+                entry.put(tmp, count);
+            }
+        }
+        return entry;
     }
 
     /**
@@ -73,7 +115,17 @@ public class ImplWordCounter implements WordCounter {
      */
     @Override
     public List<Map.Entry<String, Long>> sortWordCounts(Map<String, Long> orig) {
-        return null;
+        if (orig == null) {
+            return null;
+        }
+        List<Map.Entry<String, Long>> sortedList = new ArrayList<>(orig.entrySet());
+        Collections.sort(sortedList, new Comparator<Map.Entry<String, Long>>() {
+            @Override
+            public int compare(Entry<String, Long> o1, Entry<String, Long> o2) {
+                return o2.getValue().compareTo(o1.getValue());
+            }
+        });
+        return sortedList;
     }
 
     /**

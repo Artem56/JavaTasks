@@ -50,6 +50,7 @@ public class ImplArrayVector implements ArrayVector {
      */
     @Override
     public int getSize() {
+        if(x == null) return 0;
         return x.length;
     }
 
@@ -63,7 +64,7 @@ public class ImplArrayVector implements ArrayVector {
      */
     @Override
     public void set(int index, double value) {
-        if(index < 0) {
+        if(index < 0 || x == null) {
             return;
         }
         else if(index < x.length) {

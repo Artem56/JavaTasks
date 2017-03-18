@@ -9,8 +9,8 @@ import java.util.Map.Entry;
  * Created by Artem Solomatin on 16.03.17.
  * NetCracker
  */
-public interface WordCounter
-{
+public interface WordCounter {
+
     /**
      * Принимает текст для анализа
      * @param text текст для анализа
