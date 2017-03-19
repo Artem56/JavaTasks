@@ -21,7 +21,7 @@ public class ImplArrayVector implements ArrayVector {
      */
     @Override
     public void set(double... elements) {
-        System.arraycopy(elements, 0, x, 0, elements.length);
+        x = elements;
     }
 
     /**
