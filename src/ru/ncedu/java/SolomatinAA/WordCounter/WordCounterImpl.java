@@ -10,11 +10,11 @@ import java.util.regex.Pattern;
  * Created by Artem Solomatin on 16.03.17.
  * NetCracker
  */
-public class ImplWordCounter implements WordCounter {
+public class WordCounterImpl implements WordCounter {
     private String text;
     private HashMap<String, Long> entry;
 
-    ImplWordCounter(){
+    WordCounterImpl(){
         entry = new HashMap<>();
     }
     /**
@@ -101,7 +101,10 @@ public class ImplWordCounter implements WordCounter {
      */
     @Override
     public List<Map.Entry<String, Long>> getWordCountsSorted() {
-        return null;
+        if (this.getText() == null || this.getText().equals("")) {
+            throw new IllegalStateException();
+        }
+        return this.sortWordCounts(this.getWordCounts());
     }
 
     /**
@@ -119,12 +122,7 @@ public class ImplWordCounter implements WordCounter {
             return null;
         }
         List<Map.Entry<String, Long>> sortedList = new ArrayList<>(orig.entrySet());
-        Collections.sort(sortedList, new Comparator<Map.Entry<String, Long>>() {
-            @Override
-            public int compare(Entry<String, Long> o1, Entry<String, Long> o2) {
-                return o2.getValue().compareTo(o1.getValue());
-            }
-        });
+        Collections.sort(sortedList, (o1, o2) -> o2.getValue().compareTo(o1.getValue()));
         return sortedList;
     }
 
@@ -148,7 +146,13 @@ public class ImplWordCounter implements WordCounter {
      */
     @Override
     public void printWordCounts(PrintStream ps) {
-
+        Map<String, Long> map = this.getWordCounts();
+        if (map == null) {
+            return;
+        }
+        for(Map.Entry<String, Long> item : map.entrySet()){
+            ps.println(item.getValue() + " " + item.getKey());
+        }
     }
 
     /**
@@ -173,6 +177,12 @@ public class ImplWordCounter implements WordCounter {
      */
     @Override
     public void printWordCountsSorted(PrintStream ps) {
-
+        List<Map.Entry<String, Long>> list = this.getWordCountsSorted();
+        if (list == null) {
+            return;
+        }
+        for(Map.Entry<String, Long> item : list){
+            ps.println(item.getValue() + " " + item.getKey());
+        }
     }
 }
