@@ -12,10 +12,10 @@ import java.util.regex.Pattern;
  */
 public class WordCounterImpl implements WordCounter {
     private String text;
-    private HashMap<String, Long> entry;
+    //private HashMap<String, Long> entry = new HashMap<>();
 
-    WordCounterImpl(){
-        entry = new HashMap<>();
+    public WordCounterImpl(){
+
     }
     /**
      * Принимает текст для анализа
@@ -39,6 +39,17 @@ public class WordCounterImpl implements WordCounter {
         return text;
     }
 
+    private String deleteComments(String str) {
+        Pattern pattern = Pattern.compile("<[^><]*>");
+        Matcher matcher = pattern.matcher(str);
+        String output = matcher.replaceAll("");
+        if (!str.equals(output)) {
+            return deleteComments(output);
+        }else{
+            return output;
+        }
+    }
+
     /**
      * Возвращает {@link Map}&lt;{@link String}, {@link Long}&gt;,
      * сопоставляющую каждому слову количество его вхождений в анализируемый текст.
@@ -51,11 +62,13 @@ public class WordCounterImpl implements WordCounter {
      */
     @Override
     public Map<String, Long> getWordCounts() {
-        if (this.getText() == null || this.getText().equals("")) {
+        /*if (this.getText() == null || this.getText().equals("")) {
             throw new IllegalStateException();
         }
 
+        HashMap<String, Long> entry = new HashMap<>();
         String text = this.text.toLowerCase();
+        text = deleteComments(text);
 
         String[] tokens = text.split(" +");
         HashSet<String> words = new HashSet<>();
@@ -63,7 +76,7 @@ public class WordCounterImpl implements WordCounter {
 
 
         for (String token : tokens) {
-            System.out.print(token + " ");
+            //System.out.print(token + " ");
             if (!token.equals(" ")) {
                 words.add(token);
             }
@@ -76,12 +89,31 @@ public class WordCounterImpl implements WordCounter {
             long count = 0L;
             if (!tmp.equals("")) {
                 Pattern pattern = Pattern.compile("(^| )+" + tmp + "($| )+");
-                System.out.println(pattern + " '" + tmp + "'");    //pre-test
+                //System.out.println(pattern + " '" + tmp + "'");    //pre-test
                 Matcher matcher = pattern.matcher(text);
                 while (matcher.find()) {
                     count++;
                 }
                 entry.put(tmp, count);
+            }
+        }
+        return entry;*/
+        if (this.getText() == null || this.getText().equals("")) {
+            throw new IllegalStateException();
+        }
+        String output = deleteComments(this.getText().trim());
+        Pattern pattern = Pattern.compile("\\p{Space}+");
+        String[] tokens = pattern.split(output);
+
+        Map<String, Long> entry = new TreeMap<>();
+        for (String str: tokens) {
+            String strLower = str.toLowerCase();
+            Long count = entry.get(strLower);
+            if (count != null && count != 0) {
+                entry.remove(strLower);
+                entry.put(strLower, ++count);
+            } else {
+                entry.put(strLower, 1L);
             }
         }
         return entry;
@@ -121,9 +153,14 @@ public class WordCounterImpl implements WordCounter {
         if (orig == null) {
             return null;
         }
-        List<Map.Entry<String, Long>> sortedList = new ArrayList<>(orig.entrySet());
-        Collections.sort(sortedList, (o1, o2) -> o2.getValue().compareTo(o1.getValue()));
-        return sortedList;
+        List<Map.Entry<String, Long>> list = new ArrayList<>(orig.entrySet());
+        Collections.sort(list, new Comparator<Map.Entry<String, Long>>() {
+            @Override
+            public int compare(Map.Entry<String, Long> o1, Map.Entry<String, Long> o2) {
+                return o2.getValue().compareTo(o1.getValue());
+            }
+        });
+        return list;
     }
 
     /**
@@ -144,7 +181,7 @@ public class WordCounterImpl implements WordCounter {
      *                               (метод {@link #setText(String) setText} еще не вызывался
      *                               или последний раз вызывался с параметром <code>null</code>)
      */
-    @Override
+
     public void printWordCounts(PrintStream ps) {
         Map<String, Long> map = this.getWordCounts();
         if (map == null) {
@@ -175,7 +212,6 @@ public class WordCounterImpl implements WordCounter {
      *                               (метод {@link #setText(String) setText} еще не вызывался
      *                               или последний раз вызывался с параметром <code>null</code>)
      */
-    @Override
     public void printWordCountsSorted(PrintStream ps) {
         List<Map.Entry<String, Long>> list = this.getWordCountsSorted();
         if (list == null) {

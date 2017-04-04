@@ -14,14 +14,14 @@ import java.util.*;
 Поиск слов в тексте не работает со строками, которые содержатся в других строка. Если добавить пробелы, то перестают работать. Сейчас не работает, если одинаковые слова стоят подряд
  */
 public class TestWordCounter {
-    ImplWordCounter test;
-    String text = "   2times 2times 1time  3times  2timeSecond  3times   3times    2timeSecond";
+    WordCounterImpl test;
+    String text = "   2times  1time 2times 3times  2timeSecond  3times       2timeSecond 3times";
     Map<String, Long> unsortedExpected;
 
 
     @Before
     public void setUp(){
-        test = new ImplWordCounter();
+        test = new WordCounterImpl();
 
         unsortedExpected = new HashMap<>();
         unsortedExpected.put("1time", 1L);

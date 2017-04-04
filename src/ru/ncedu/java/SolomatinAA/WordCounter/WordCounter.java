@@ -9,8 +9,8 @@ import java.util.Map.Entry;
  * Created by Artem Solomatin on 16.03.17.
  * NetCracker
  */
-public interface WordCounter {
-
+public interface WordCounter
+{
     /**
      * Принимает текст для анализа
      * @param text текст для анализа
@@ -32,7 +32,7 @@ public interface WordCounter {
      * (метод {@link #setText(java.lang.String) setText} еще не вызывался
      * или последний раз вызывался с параметром <code>null</code>)
      */
-    Map<String, Long> getWordCounts();
+    Map<String, Long> getWordCounts() throws IllegalStateException;
     /**
      * Возвращает список из {@link Entry Map.Entry}&lt;{@link String}, {@link Long}&gt;,
      * сопоставляющий каждому слову количество его вхождений в анализируемый текст
@@ -44,7 +44,7 @@ public interface WordCounter {
      * (метод {@link #setText(java.lang.String) setText} еще не вызывался
      * или последний раз вызывался с параметром <code>null</code>)
      */
-    List<Map.Entry<String, Long>> getWordCountsSorted ();
+    List<Map.Entry<String, Long>> getWordCountsSorted() throws IllegalStateException;
     /**
      * Упорядочивает результат подсчета количеств вхождений слов в порядке убывания количества вхождений.<br/>
      * Слова с одинаковым количеством вхождений упорядочиваются в алфавитном порядке (без учета регистра!).<br/>
@@ -54,42 +54,4 @@ public interface WordCounter {
      * @return упорядоченный результат подсчета или <code>null</code>, если <code>orig == null</code>
      */
     List<Map.Entry<String, Long>> sortWordCounts (Map<String, Long> orig);
-    /**
-     * Распечатывает слова и количество их вхождений в указанный поток вывода.
-     * <br/>
-     * Формат вывода следующий:
-     * <ul>
-     *	<li>Каждое слово вместе с количеством вхождений выводится на отдельной строке</li>
-     *	<li>На каждой строке слово и количество вхождений разделены одним! пробелом,
-     * никаких других символов на строке быть не должно</li>
-     * </ul>
-     * Все выводимые слова должны быть приведены к нижнему регистру.<br/>
-     * Метод не является автоматически тестируемым, но мы узнаем, если вы его не реализуете.<br/>
-     * Проверить корректность метода (для себя, в методе main) вы можете, передав в него System.out.
-     * @param ps поток вывода
-     * @throws IllegalStateException если не задан текст для анализа
-     * (метод {@link #setText(java.lang.String) setText} еще не вызывался
-     * или последний раз вызывался с параметром <code>null</code>)
-     */
-    void printWordCounts (PrintStream ps);
-    /**
-     * Распечатывает слова и количество их вхождений в указанный поток вывода.<br/>
-     * Слова выводятся в порядке убывания количества их вхождений, причем слова
-     * с одинаковыми количествами вхождений выводятся в алфавитном порядке.
-     * <br/>
-     * Формат вывода следующий:
-     * <ul>
-     *	<li>Каждое слово вместе с количеством вхождений выводится на отдельной строке</li>
-     *	<li>На каждой строке слово и количество вхождений разделены одним! пробелом,
-     * никаких других символов на строке быть не должно</li>
-     * </ul>
-     * Все выводимые слова должны быть приведены к нижнему регистру.<br/>
-     * Метод не является автоматически тестируемым, но мы узнаем, если вы его не реализуете.<br/>
-     * Проверить корректность метода (для себя, в методе main) вы можете, передав в него System.out.
-     * @param ps поток вывода
-     * @throws IllegalStateException если не задан текст для анализа
-     * (метод {@link #setText(java.lang.String) setText} еще не вызывался
-     * или последний раз вызывался с параметром <code>null</code>)
-     */
-    void printWordCountsSorted (PrintStream ps);
 }
