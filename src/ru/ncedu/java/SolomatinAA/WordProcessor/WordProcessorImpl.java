@@ -8,7 +8,7 @@ import java.util.Set;
  * Created by Artem Solomatin on 15.03.17.
  * NetCracker
  */
-public class ImplWordProcessor implements WordProcessor {
+public class WordProcessorImpl implements WordProcessor {
     private String text;
     /**
      * @return текущий текст для работы или <code>null</code>,

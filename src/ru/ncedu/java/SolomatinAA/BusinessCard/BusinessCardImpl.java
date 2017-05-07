@@ -9,7 +9,7 @@ import java.util.Scanner;
  * Created by Artem Solomatin on 16.03.17.
  * NetCracker
  */
-public class ImplBusinessCard implements BusinessCard {
+public class BusinessCardImpl implements BusinessCard {
     private String name;
     private String surname;
     private String department;
@@ -18,11 +18,11 @@ public class ImplBusinessCard implements BusinessCard {
     private int salary;
     private long phoneNumber;
 
-    public ImplBusinessCard(){
+    public BusinessCardImpl(){
 
     }
 
-    public ImplBusinessCard(String name, String surname, String department, String birthDate, Character gender, int salary, long phoneNumber) {
+    public BusinessCardImpl(String name, String surname, String department, String birthDate, Character gender, int salary, long phoneNumber) {
         this.name = name;
         this.surname = surname;
         this.department = department;
@@ -114,7 +114,7 @@ public class ImplBusinessCard implements BusinessCard {
                 salary == -1 || phoneNumber == -1) {
             throw new NoSuchElementException();
         }
-        return new ImplBusinessCard(name, surname, department, birthDate, gender, salary, phoneNumber);
+        return new BusinessCardImpl(name, surname, department, birthDate, gender, salary, phoneNumber);
     }
 
     /**
