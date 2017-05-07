@@ -11,9 +11,10 @@ import java.util.regex.Pattern;
 public class CurriculumVitaeImpl implements CurriculumVitae {
     private String text;
     private List<Phone> phones = new ArrayList<>();
-    public static final String FULL_NAME_PATTERN = "([A-Z][a-z]+\\.?\\s?){2,3}";
-    ArrayList hiddenName = new ArrayList();
-    ArrayList hiddenPhone = new ArrayList();
+    private static final String FULL_NAME_PATTERN = "(^|[^A-Za-z])(([A-Z][a-z]*[a-z\\.]) ([A-Z][a-z]*[a-z\\.])( ([A-Z][a-z]*[a-z\\.]))?)";
+    private static final String PHONE_PATTERN =
+            "(\\(?([1-9][0-9]{2})\\)?[-. ]*)?([1-9][0-9]{2})[-. ]*(\\d{2})[-. ]*(\\d{2})(\\s*ext\\.?\\s*([0-9]+))?";
+    private Map<String, String> mem = new HashMap<>();
 
 
     public CurriculumVitaeImpl() {
@@ -39,7 +40,7 @@ public class CurriculumVitaeImpl implements CurriculumVitae {
      */
     @Override
     public String getText() throws IllegalStateException {
-        if(text == null || text.equals("")){
+        if (text == null || text.equals("")) {
             throw new IllegalStateException();
         }
         return text;
@@ -56,33 +57,29 @@ public class CurriculumVitaeImpl implements CurriculumVitae {
      * @see Phone
      */
     @Override
-    public List<Phone> getPhones() throws IllegalStateException {
-        if(text == null || text.equals("")){
-            throw new IllegalStateException();
+        public List<Phone> getPhones() throws IllegalStateException {
+            List <Phone> phones = new ArrayList<>();
+            String text = this.getText();
+            Pattern pattern = Pattern.compile(PHONE_PATTERN);
+            Matcher matcher = pattern.matcher(text);
+
+            while (matcher.find()) {
+                String area = matcher.group(2);
+                String ex = matcher.group(7);
+                String number = matcher.group();
+                int areaCode = -1;
+                int extension = -1;
+                if (area != null) {
+                    areaCode = Integer.parseInt(area);
+                }
+                if (ex != null) {
+                    extension = Integer.parseInt(ex);
+                }
+                phones.add(new Phone(number, areaCode, extension));
+            }
+            return phones;
         }
 
-        Pattern pattern = Pattern.compile(PHONE_PATTERN);
-        Matcher matcher = pattern.matcher(getText());
-        Phone phone;
-        while(matcher.find()){
-            int areaCode = -1;
-            int extension = -1;
-            if (matcher.group(2) != null){
-                areaCode = Integer.parseInt(matcher.group(2));
-                //System.out.println(areaCode);
-            }
-            if (matcher.group(7) != null){
-                extension = Integer.parseInt(matcher.group(7));
-                //System.out.println(extension);
-            }
-            phone = new Phone(matcher.group(), areaCode, extension);
-            //System.out.println(matcher.group());
-            //System.out.println(matcher.group(2));
-            phones.add(phone);
-        }
-
-        return phones;
-    }
 
     /**
      * Returns the full name
@@ -101,16 +98,15 @@ public class CurriculumVitaeImpl implements CurriculumVitae {
      */
     @Override
     public String getFullName() throws NoSuchElementException, IllegalStateException {
-        if(text == null || text.equals("")){
+        if (text == null || text.equals("")) {
             throw new IllegalStateException();
         }
         Pattern pattern = Pattern.compile(FULL_NAME_PATTERN);
         Matcher matcher = pattern.matcher(getText());
-        if(matcher.find()){
-            return matcher.group();
+        if (matcher.find()){
+            return matcher.group(2);
         }
-
-        throw new NoSuchElementException();
+        else throw new NoSuchElementException();
     }
 
     /**
@@ -121,7 +117,7 @@ public class CurriculumVitaeImpl implements CurriculumVitae {
      */
     @Override
     public String getFirstName() throws NoSuchElementException, IllegalStateException {
-        if(text == null || text.equals("")){
+        if (text == null || text.equals("")) {
             throw new IllegalStateException();
         }
         return getFullName().split(" ")[0];
@@ -136,11 +132,11 @@ public class CurriculumVitaeImpl implements CurriculumVitae {
      */
     @Override
     public String getMiddleName() throws NoSuchElementException, IllegalStateException {
-        if(text == null || text.equals("")){
+        if (text == null || text.equals("")) {
             throw new IllegalStateException();
         }
         String[] arr = getFullName().split(" ");
-        if(arr.length == 3){
+        if (arr.length == 3) {
             return arr[1];
         }
         return null;
@@ -154,11 +150,11 @@ public class CurriculumVitaeImpl implements CurriculumVitae {
      */
     @Override
     public String getLastName() throws NoSuchElementException, IllegalStateException {
-        if(text == null || text.equals("")){
+        if (text == null || text.equals("")) {
             throw new IllegalStateException();
         }
         String[] arr = getFullName().split(" ");
-        return arr[arr.length  -1];
+        return arr[arr.length - 1];
     }
 
     /**
@@ -171,26 +167,11 @@ public class CurriculumVitaeImpl implements CurriculumVitae {
      */
     @Override
     public void updateLastName(String newLastName) throws NoSuchElementException, IllegalStateException {
-        if(text == null || text.equals("")){
+        if (text == null || text.equals("")) {
             throw new IllegalStateException();
         }
-        while(true) {
-            String lastName = getLastName();
-            if(lastName == null){
-                throw new NoSuchElementException();
-            }
-            //System.out.println(lastName);
-            //System.out.println(newLastName);
-           if(!lastName.equals(newLastName)) {
-               //System.out.println(text);
-               String str = text.replaceAll(lastName, newLastName);
-               setText(str);
-               //System.out.println(text);
-                break;
-            }else{
-               break;
-           }
-        }
+
+        text = getText().replace(getLastName(), newLastName);
     }
 
     /**
@@ -206,24 +187,18 @@ public class CurriculumVitaeImpl implements CurriculumVitae {
      */
     @Override
     public void updatePhone(Phone oldPhone, Phone newPhone) throws IllegalArgumentException, IllegalStateException {
-        if(text == null || text.equals("")){
+        if (text == null || text.equals("")) {
             throw new IllegalStateException();
         }
-        Pattern pattern = Pattern.compile(oldPhone.getNumber());
-        Matcher matcher = pattern.matcher(getText());
-        String str;
-
-        //System.out.println(text);
-        int ptr = 0;
-        while(matcher.find()) {
-            str = matcher.replaceAll(newPhone.getNumber());
-            setText(str);
-            ptr++;
+        boolean state = false;
+        if(text.contains(oldPhone.getNumber())){
+            state = true;
+            this.text = text.replaceAll(oldPhone.getNumber(), newPhone.getNumber());
         }
-        if(ptr == 0){
+
+        if(!state){
             throw new IllegalArgumentException();
         }
-        //System.out.println(text);
     }
 
     /**
@@ -239,32 +214,20 @@ public class CurriculumVitaeImpl implements CurriculumVitae {
      */
     @Override
     public void hide(String piece) throws IllegalArgumentException, IllegalStateException {
-        if(text == null || text.equals("")){
+        if (text == null || text.equals("")) {
             throw new IllegalStateException();
         }
-        //hiddenName.add(piece);
-
-        Pattern pattern = Pattern.compile(piece);
-        Matcher matcher = pattern.matcher(getText());
-        String str;
-        StringBuffer sb = new StringBuffer("");
-        for(int i = 0;i < piece.length();i++) {    //Создаем строку, котрой будем заменять необходимое имя
-            sb.append("X");
-        }
-
-        //System.out.println("1 " + text);
-        int ptr = 0;
-        while(matcher.find()) {
-            //hiddenName.put(piece, matcher.start());
-            //System.out.println("2 " + text);
-            hiddenName.add(piece);
-            hiddenName.add(matcher.start());
-            str = matcher.replaceAll(sb.toString());
-            setText(str);
-            //System.out.println("3 " + text);
-            ptr++;
-        }
-        if(ptr == 0){
+        String text = getText();
+        String copy = piece;
+        if (text.contains(piece)){
+            Pattern pattern = Pattern.compile("([^ .@])");
+            Matcher matcher = pattern.matcher(piece);
+            while(matcher.find()){
+                copy = copy.replace(matcher.group(), "X");
+            }
+            mem.put(copy, piece);
+            this.text = text.replaceAll(piece, copy);
+        }else {
             throw new IllegalArgumentException();
         }
     }
@@ -281,33 +244,21 @@ public class CurriculumVitaeImpl implements CurriculumVitae {
      */
     @Override
     public void hidePhone(String phone) throws IllegalArgumentException, IllegalStateException {
-        if(text == null || text.equals("")){
+        if (text == null || text.equals("")) {
             throw new IllegalStateException();
         }
-        //hiddenPhone.add(phone);
-
-        Pattern pattern = Pattern.compile(phone);
-        Matcher matcher = pattern.matcher(getText());
-        String str;
-        StringBuffer sb = new StringBuffer("");
-        for(int i = 0;i < phone.length();i++) {    //Создаем строку, котрой будем заменять необходимый номер
-            sb.append("X");
-        }
-
-        int ptr = 0;
-        while(matcher.find()) {
-            //hiddenPhone.put(phone, matcher.start());
-            //System.out.println("start: " + matcher.start());
-            hiddenPhone.add(phone);
-            hiddenPhone.add(matcher.start());
-            //System.out.println("2: " + text);
-            str = matcher.replaceAll(sb.toString());
-            setText(str);
-            //System.out.println("3: " + text);
-            //System.out.println("hidden " + hiddenPhone.get(phone) + " size" + hiddenPhone.size());
-            ptr++;
-        }
-        if(ptr == 0){
+        String text = getText();
+        String copy = phone;
+        if (text.contains(phone)){
+            Pattern pattern = Pattern.compile("(\\d)");
+            Matcher matcher = pattern.matcher(phone);
+            while(matcher.find()){
+                copy = copy.replace(matcher.group(), "X");
+            }
+            mem.put(copy, phone);
+            String result = text.replace(phone, copy);
+            this.setText(result);
+        }else {
             throw new IllegalArgumentException();
         }
     }
@@ -325,26 +276,31 @@ public class CurriculumVitaeImpl implements CurriculumVitae {
      */
     @Override
     public int unhideAll() throws IllegalStateException {
-        char[] charText = text.toCharArray();
+        if (text == null || text.equals("")) {
+            throw new IllegalStateException();
+        }
+        String text = getText();
+        int count = 0;
+        ArrayList<Map.Entry<String, String>> list = new ArrayList<>(mem.entrySet());
 
-        for(int i = 0;i < hiddenName.size();i+=2){
-            char[] charName = ((String)hiddenName.get(i)).toCharArray();
-            int position = (int)hiddenName.get(i + 1);
-            for(int j = 0;j < charName.length;j++){
-                charText[position + j] = charName[j];
+        Collections.sort(list, new Comparator<Map.Entry<String, String>>() {
+            @Override
+            public int compare(Map.Entry<String, String> a, Map.Entry<String, String> b) {
+                return b.getKey().length() - a.getKey().length();
+            }
+        });
+
+        for (Map.Entry<String, String> fin: mem.entrySet()) {
+            Pattern pattern = Pattern.compile(fin.getKey());
+            Matcher matcher = pattern.matcher(text);
+            if (matcher.find()){
+                text = text.replaceAll(matcher.group(),fin.getValue());
+                count++;
             }
         }
+        mem.clear();
 
-        for(int i = 0;i < hiddenPhone.size();i+=2){
-            char[] charPhone = ((String)hiddenPhone.get(i)).toCharArray();
-            int position = (int)hiddenPhone.get(i + 1);
-            for(int j = 0;j < charPhone.length;j++){
-                charText[position + j] = charPhone[j];
-            }
-        }
-        String str = new String(charText);
-        setText(str);
-
-        return 0;
+        setText(text);
+        return count;
     }
 }

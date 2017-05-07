@@ -1,9 +1,8 @@
 package ru.ncedu.java.SolomatinAA.BusinessCard;
 
-import java.util.Calendar;
-import java.util.InputMismatchException;
-import java.util.NoSuchElementException;
-import java.util.Scanner;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * Created by Artem Solomatin on 16.03.17.
@@ -13,7 +12,7 @@ public class BusinessCardImpl implements BusinessCard {
     private String name;
     private String surname;
     private String department;
-    private String birthDate;
+    private Date birthDate;
     private Character gender;
     private int salary;
     private long phoneNumber;
@@ -22,7 +21,7 @@ public class BusinessCardImpl implements BusinessCard {
 
     }
 
-    public BusinessCardImpl(String name, String surname, String department, String birthDate, Character gender, int salary, long phoneNumber) {
+    public BusinessCardImpl(String name, String surname, String department, Date birthDate, Character gender, int salary, long phoneNumber) {
         this.name = name;
         this.surname = surname;
         this.department = department;
@@ -62,7 +61,8 @@ public class BusinessCardImpl implements BusinessCard {
         String name = null;
         String surname = null;
         String department = null;
-        String birthDate = null; //"DD-MM-YYYY"
+        String brthDate; //"DD-MM-YYYY"
+        Date birthDate = null;
         Character gender = null; //F or M
         int salary = -1; // number from 100 to 100000 Phone number : 10-digits number
         long phoneNumber = -1;
@@ -77,17 +77,22 @@ public class BusinessCardImpl implements BusinessCard {
         if (scanner.hasNext())
             department = scanner.next();
         if (scanner.hasNext()){
-            birthDate = scanner.next();
-            //правильная ли введена дата
+            brthDate = scanner.next();
+            try {
+                birthDate = new SimpleDateFormat("dd-MM-yyyy").parse(brthDate);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            //birthDate = setDate(brthDate);
         }
         if (scanner.hasNext()){
             String gndr = scanner.next();
             switch (gndr) {
                 case "F":
-                    gender = new Character('F');
+                    gender = 'F';
                     break;
                 case "M":
-                    gender = new Character('M');
+                    gender = 'M';
                     break;
                 default:
                     throw new InputMismatchException();
@@ -110,12 +115,29 @@ public class BusinessCardImpl implements BusinessCard {
             }
             phoneNumber = Long.valueOf(phn);
         }
-        if (name == null || surname == null || department == null || birthDate == null || gender == null ||
-                salary == -1 || phoneNumber == -1) {
+        if (phoneNumber == -1) {
             throw new NoSuchElementException();
         }
         return new BusinessCardImpl(name, surname, department, birthDate, gender, salary, phoneNumber);
     }
+
+    /*private Calendar setDate(String stringToValidate) {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-mm-yyyy");
+        sdf.setLenient(false);
+
+        Date date;
+
+        try{
+            date = sdf.parse(stringToValidate);
+        }catch (ParseException e){
+            System.out.println("Error in parsing");
+            return null;
+        }
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+
+        return cal;
+    }*/
 
     /**
      * @return Employee Name and Last name separated by space (" "), like "Chuck Norris"
@@ -145,16 +167,15 @@ public class BusinessCardImpl implements BusinessCard {
      * @return Employee Age in years, like 69
      */
     @Override
-    public int getAge() {
+    public int getAge() {/*
         long currentTime = System.currentTimeMillis();
-        long birthTime;
-
-        Calendar diff = Calendar.getInstance();
-        diff.setTimeInMillis(currentTime);
-
-
-
-        return 0;//current.get(Calendar.YEAR) - birthDate.get(Calendar.YEAR);
+        Calendar current = Calendar.getInstance();
+        current.setTimeInMillis(currentTime);
+        return current.get(Calendar.YEAR) - birthDate.get(Calendar.YEAR);*/
+        long age;
+        age = (System.currentTimeMillis() - birthDate.getTime())
+                / 1000 / 60 / 60 / 24 / 365;
+        return (int)age;
     }
 
     /**
