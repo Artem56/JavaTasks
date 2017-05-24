@@ -10,24 +10,26 @@ import java.util.*;
  */
 public class BusinessCardImpl implements BusinessCard {
     private String name;
-    private String surname;
+    private String lastName;
     private String department;
-    private Date birthDate;
-    private Character gender;
-    private int salary;
-    private long phoneNumber;
+    private String birthDate; //"DD-MM-YYYY"
+    private char gender; //F or M
+    private int salary; // number from 100 to 100000 Phone number : 10-digits number
+    private String phoneNumber;
+    private Calendar brthDate;
 
     public BusinessCardImpl(){
 
     }
 
-    public BusinessCardImpl(String name, String surname, String department, Date birthDate, Character gender, int salary, long phoneNumber) {
+    private BusinessCardImpl(String name, String lastName, String department, String birthDate, char gender, int salary, String phoneNumber, Calendar brthDate){
         this.name = name;
-        this.surname = surname;
+        this.lastName = lastName;
         this.department = department;
         this.birthDate = birthDate;
         this.gender = gender;
         this.salary = salary;
+        this.brthDate = brthDate;
         this.phoneNumber = phoneNumber;
     }
 
@@ -58,71 +60,61 @@ public class BusinessCardImpl implements BusinessCard {
     public BusinessCard getBusinessCard(Scanner scanner) {
         scanner.useDelimiter(";");
 
-        String name = null;
-        String surname = null;
-        String department = null;
-        String brthDate; //"DD-MM-YYYY"
-        Date birthDate = null;
-        Character gender = null; //F or M
-        int salary = -1; // number from 100 to 100000 Phone number : 10-digits number
-        long phoneNumber = -1;
-
-
+        String nameArg = null;
+        String lastNameArg = null;
+        String departmentArg = null;
+        String birthDateArg = null; //"DD-MM-YYYY"
+        char genderArg = 'a'; //F or M
+        int salaryArg = -1; // number from 100 to 100000 Phone number : 10-digits number
+        String phoneNumberArg = null;
+        Calendar brthDateArg = null;
 
         if (scanner.hasNext()){
-            name = scanner.next();
+            nameArg = scanner.next();
         }
         if (scanner.hasNext())
-            surname = scanner.next();
+            lastNameArg = scanner.next();
         if (scanner.hasNext())
-            department = scanner.next();
+            departmentArg = scanner.next();
         if (scanner.hasNext()){
-            brthDate = scanner.next();
-            try {
-                birthDate = new SimpleDateFormat("dd-MM-yyyy").parse(brthDate);
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
-            //birthDate = setDate(brthDate);
+            birthDateArg = scanner.next();
+            brthDateArg = this.setDate(birthDateArg);
+            if ( brthDateArg == null )
+                throw new InputMismatchException();
         }
         if (scanner.hasNext()){
             String gndr = scanner.next();
-            switch (gndr) {
-                case "F":
-                    gender = 'F';
-                    break;
-                case "M":
-                    gender = 'M';
-                    break;
-                default:
-                    throw new InputMismatchException();
-            }
+            if (!(gndr.equals("F") || gndr.equals("M")))
+                throw new InputMismatchException();
+            genderArg = gndr.charAt(0);
         }
         if (scanner.hasNext()){
             String numb = scanner.next();
             try{
-                salary = Integer.parseInt(numb);
+                salaryArg = Integer.parseInt(numb);
             }catch(NumberFormatException nfe){
                 throw new InputMismatchException();
             }
-            if (salary < 100 || salary > 100000 )
+            if (salaryArg < 100 || salaryArg > 100000 )
                 throw new InputMismatchException();
         }
         if (scanner.hasNext()){
-            String phn = scanner.next();
-            if(phn.length() != 10) {
+            String numb = scanner.next();
+            if(numb.length() != 10)
                 throw new InputMismatchException();
-            }
-            phoneNumber = Long.valueOf(phn);
+            phoneNumberArg = numb.substring(0,10);
         }
-        if (phoneNumber == -1) {
+        if (phoneNumberArg == null)
             throw new NoSuchElementException();
-        }
-        return new BusinessCardImpl(name, surname, department, birthDate, gender, salary, phoneNumber);
+
+        return new BusinessCardImpl(nameArg, lastNameArg, departmentArg, birthDateArg, genderArg, salaryArg,phoneNumberArg, brthDateArg);
     }
 
-    /*private Calendar setDate(String stringToValidate) {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd-mm-yyyy");
+    private Calendar setDate(String stringToValidate) {
+        if(stringToValidate == null)
+            return null;
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
         sdf.setLenient(false);
 
         Date date;
@@ -130,21 +122,21 @@ public class BusinessCardImpl implements BusinessCard {
         try{
             date = sdf.parse(stringToValidate);
         }catch (ParseException e){
-            System.out.println("Error in parsing");
             return null;
         }
+
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
 
         return cal;
-    }*/
+    }
 
     /**
      * @return Employee Name and Last name separated by space (" "), like "Chuck Norris"
      */
     @Override
     public String getEmployee() {
-        return name + " " + surname;
+        return name + " " + lastName;
     }
 
     /**
@@ -167,15 +159,21 @@ public class BusinessCardImpl implements BusinessCard {
      * @return Employee Age in years, like 69
      */
     @Override
-    public int getAge() {/*
-        long currentTime = System.currentTimeMillis();
-        Calendar current = Calendar.getInstance();
-        current.setTimeInMillis(currentTime);
-        return current.get(Calendar.YEAR) - birthDate.get(Calendar.YEAR);*/
-        long age;
-        age = (System.currentTimeMillis() - birthDate.getTime())
-                / 1000 / 60 / 60 / 24 / 365;
-        return (int)age;
+    public int getAge() {
+	        Calendar today = Calendar.getInstance();
+	        Calendar birth = Calendar.getInstance();
+	        birth.set(Integer.parseInt(birthDate.substring(6)),
+	                Integer.parseInt(birthDate.substring(3, 5)),
+	                Integer.parseInt(birthDate.substring(0, 2)));
+
+	        int age = today.get(Calendar.YEAR) - birth.get(Calendar.YEAR);
+	        if (today.get(Calendar.MONTH) < birth.get(Calendar.MONTH) ||
+	                today.get(Calendar.MONTH) == birth.get(Calendar.MONTH) &&
+	                        today.get(Calendar.DAY_OF_MONTH) < birth.get(Calendar.DAY_OF_MONTH)) {
+	            age--;
+	        }
+
+	        return age;
     }
 
     /**
@@ -183,9 +181,7 @@ public class BusinessCardImpl implements BusinessCard {
      */
     @Override
     public String getGender() {
-        if(gender.toString().equals("F")) return "Female";
-        if(gender.toString().equals("M"))return "Male";
-        return null;
+        return (gender == 'F')?("Female"):("Male");
     }
 
     /**
@@ -193,10 +189,10 @@ public class BusinessCardImpl implements BusinessCard {
      */
     @Override
     public String getPhoneNumber() {
-        String number = Long.toString(phoneNumber);
-        return "+7 " + number.substring(0, 3) + "-" +
-                number.substring(3, 6) + "-" +
-                number.substring(6, 8) + "-" +
-                number.substring(8, 10);
+        String number = phoneNumber;
+        return "+7 "+ number.substring(0,3) +
+                "-" + number.substring(3,6) +
+                "-" + number.substring(6,8) +
+                "-" + number.substring(8,10);
     }
 }
